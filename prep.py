@@ -1,39 +1,23 @@
 import config
 import os
 import pandas as pd
+from data import dataprep
+from utils import utils, datautils
 
 
-def __get_20ng_text(filename):
-    text = ''
-    f = open(filename, encoding='utf-8')
-    for line in f:
-        if not line.strip():
-            break
-    for line in f:
-        text += line
-    f.close()
-    return text
+min_word_cnt = 2
+max_word_cnt = 1500
+filter_non_alphabet = True
+filter_one_time_words = True
+# dataset_files = config.PTB_FILES
+dataset_files = config.TNG_FILES
+# dataprep.merge_20ng(
+#     dataset_files['train_docs_dir'], dataset_files['train_text_file'], dataset_files['train_labels_file'])
+datautils.gen_word_cnt_file(
+    dataset_files['train_tok_text_file'], dataset_files['word_cnt_file'],
+    filter_non_alphabet=filter_non_alphabet, filter_one_time=filter_one_time_words)
 
-
-def __merge_20ng():
-    label_tups = list()
-    fout_text = open(config.TNG_TRAIN_TEXTS_FILE, 'w', encoding='utf-8')
-    for i, folder_name in enumerate(os.listdir(config.TNG_TRAIN_DIR)):
-        data_path = os.path.join(config.TNG_TRAIN_DIR, folder_name)
-        assert not os.path.isfile(data_path)
-        for filename in os.listdir(data_path):
-            file_path = os.path.join(data_path, filename)
-            label_tups.append((file_path, folder_name, i))
-
-            print(file_path)
-            doc_text = __get_20ng_text(file_path)
-            print(doc_text)
-            break
-    fout_text.close()
-
-    df_label = pd.DataFrame(label_tups, columns=['path', 'tl', 'il'])
-    with open(config.TNG_TRAIN_LABEL_FILE, 'w', encoding='utf-8', newline='\n') as fout:
-        df_label.to_csv(fout, index=False)
-
-
-__merge_20ng()
+# datautils.gen_word_cnt_file(dataset_files['train_text_file'], dataset_files['word_cnt_file'])
+# datautils.gen_tfrec_file(
+#     dataset_files['train_text_file'], dataset_files['word_cnt_file'], min_word_cnt,
+#     max_word_cnt, dataset_files['train_tfrec_file'])
