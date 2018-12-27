@@ -25,8 +25,8 @@ class BowDataset:
         for line in f:
             words = line.strip().split(' ')
             word_idx_cnt_tups = self.__get_word_cnt_tups(words, self.vocab)
-            if not word_idx_cnt_tups:
-                continue
+            # if not word_idx_cnt_tups:
+            #     continue
             word_idxs = [idx for idx, _ in word_idx_cnt_tups]
             word_cnts = [cnt for _, cnt in word_idx_cnt_tups]
             self.word_idxs_list.append(word_idxs)

@@ -4,6 +4,12 @@ import collections
 from utils import utils
 
 
+def load_tng_labels(tng_labels_file):
+    with open(tng_labels_file, encoding='utf-8') as f:
+        df = pd.read_csv(f)
+    return df['il'].as_matrix()
+
+
 def __has_alphabet(w: str):
     for ch in w:
         if ch.isalpha():

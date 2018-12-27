@@ -1,16 +1,9 @@
-import tensorflow as tf
+# import tensorflow as tf
 import numpy as np
+from sklearn.metrics import normalized_mutual_info_score
 
 
-np.random.seed(123)
-W = tf.placeholder(tf.float32, [3, 5], "W")
-# W_sm = tf.nn.softmax(W, axis=1)
-# W_sm = tf.nn.softmax(W, axis=0)
-v = tf.constant([1, 2, 3], tf.float32, shape=[3, 1])
-x = v * W
-
-sess = tf.Session()
-W_input = np.random.uniform(0, 2, [3, 5])
-print(W_input)
-x_val = sess.run([x], feed_dict={W: W_input})[0]
-print(x_val)
+# print(normalized_mutual_info_score([1, 1, 2, 3], [2, 2, 1, 4]))
+vals = np.array([[1, 2], [2, 3]])
+x = np.array([3, 5])
+print(np.sum(x * vals[0]))

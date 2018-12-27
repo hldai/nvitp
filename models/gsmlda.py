@@ -1,7 +1,8 @@
 import tensorflow as tf
-from data import bowdataset
-from utils import modelutils
 import numpy as np
+from sklearn.metrics import normalized_mutual_info_score
+from utils import modelutils
+from data import bowdataset
 
 
 class GSMLDA:
@@ -57,19 +58,42 @@ class GSMLDA:
 
         self.optim = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss, global_step=self.step)
 
-    def train(self, train_text_file, vocab, idx2word_dict):
+    def get_best_topic(self, x, beta):
+        log_probs = np.log(beta)
+        max_log_prob = -1e8
+        best_topic_idx = 0
+        for i in range(self.n_topics):
+            log_prob = np.sum(x * log_probs[i])
+            if log_prob > max_log_prob:
+                best_topic_idx = i
+                max_log_prob = log_prob
+        return best_topic_idx, max_log_prob
+
+    def eval(self, dataset, labels, beta):
+        labels_sys = list()
+        for i in range(dataset.n_examples):
+            x = dataset.get_example(i)
+            best_topic_idx, max_log_prob = self.get_best_topic(x, beta)
+            labels_sys.append(best_topic_idx)
+        print(normalized_mutual_info_score(labels, labels_sys))
+
+    def train(self, n_train_steps, train_text_file, train_labels, vocab, idx2word_dict):
         import math
         print(self.vocab_size)
 
         dataset_train = bowdataset.BowDataset(train_text_file, vocab, idx2word_dict)
+        # print(dataset_train.n_examples)
+        # print(len(train_labels))
+        # exit()
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
         # iterator = self.reader.iterator()
         losses = list()
-        for step in range(0, 100000):
-            example_idx = step % dataset_train.n_examples
+        rand_idxs = np.random.permutation(np.arange(dataset_train.n_examples))
+        for step in range(n_train_steps):
+            example_idx = rand_idxs[step % dataset_train.n_examples]
             x = dataset_train.get_example(example_idx)
             # x, x_idx = next(iterator)
 
@@ -117,11 +141,12 @@ class GSMLDA:
             # if step > 1370:
             #     break
 
-            if step % 1000 == 0:
+            if step % 2000 == 0:
                 print('step={} loss={}'.format(step, sum(losses) / len(losses)))
                 losses = list()
-            if step % 1000 == 0:
+            if step % 2000 == 0:
                 self.__show_topics(beta_val, idx2word_dict)
+                self.eval(dataset_train, train_labels, beta_val)
 
     @staticmethod
     def __show_topics(beta_val, idx2word):
