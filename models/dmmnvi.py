@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.metrics import normalized_mutual_info_score, accuracy_score
 from utils import modelutils
 from data import bowdataset
+from sklearn.cluster import KMeans
 
 
 class DMMNVI:
@@ -100,6 +101,17 @@ class DMMNVI:
             labels_sys.append(best_topic_idx)
         print('NMI', normalized_mutual_info_score(labels, labels_sys))
 
+    def eval_k_means(self, dataset, labels):
+        vecs = list()
+        for i in range(dataset.n_examples):
+            x = dataset.get_example(i)
+            vec = self.sess.run(self.mu, feed_dict={self.x: x})
+            vecs.append(np.squeeze(vec))
+        vecs = np.array(vecs, dtype=np.float32)
+        print('doing kmeans ...')
+        kmeans = KMeans(n_clusters=self.n_topics, random_state=0).fit(vecs)
+        print('NMI', normalized_mutual_info_score(labels, kmeans.labels_))
+
     def train_supervised(self, x, y_true):
         _, loss, lp, lps, wv, bv, l2v, l2w, l2b, l1v, l1w, l1b = self.sess.run(
             [self.optim_supervised, self.loss_supervised, self.label_pred, self.label_pred_scores,
@@ -160,6 +172,7 @@ class DMMNVI:
             losses_supervised.append(loss_supervised)
             if math.isnan(loss_supervised):
                 break
+
             # if step % 100 == 0:
             #     self._print_intermediate_variabels(x)
 
@@ -185,11 +198,14 @@ class DMMNVI:
                 print('step={} loss={} loss_l={}'.format(
                     step, sum(losses), sum(losses_supervised)))
                 losses, losses_supervised = list(), list()
-                print('acc={}'.format(accuracy_score(labels_true, labels_pred)))
-                labels_true, labels_pred = list(), list()
-            if step % 2000 == 0:
-                self.__show_topics(beta_val, idx2word_dict)
-                self.eval(dataset_train, train_labels, beta_val)
+                if labels_pred:
+                    print('acc={}'.format(accuracy_score(labels_true, labels_pred)))
+                    labels_true, labels_pred = list(), list()
+            # if step % 2000 == 0:
+            #     self.__show_topics(beta_val, idx2word_dict)
+            #     self.eval(dataset_train, train_labels, beta_val)
+            if (step + 1) % 2000 == 0:
+                self.eval_k_means(dataset_train, train_labels)
 
     @staticmethod
     def __show_topics(beta_val, idx2word):

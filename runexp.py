@@ -29,6 +29,7 @@ if __name__ == '__main__':
 
     train_labels = datautils.load_tng_labels(dataset_files['train_labels_file'])
 
+
     tf.random.set_random_seed(127)
     # model = GSMLDA(len(vocab))
     model = DMMNVI(len(vocab), n_topics=n_topics)
