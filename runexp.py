@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import tensorflow as tf
 import config
 from utils import datautils, utils
@@ -9,6 +10,8 @@ from models.dmmnvi import DMMNVI
 
 
 if __name__ == '__main__':
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
     n_topics = 20
     min_word_cnt = 20
     max_word_cnt = 1000
@@ -28,7 +31,6 @@ if __name__ == '__main__':
     print(len(vocab), 'words in vocab')
 
     train_labels = datautils.load_tng_labels(dataset_files['train_labels_file'])
-
 
     tf.random.set_random_seed(127)
     # model = GSMLDA(len(vocab))

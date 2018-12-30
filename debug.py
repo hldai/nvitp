@@ -7,3 +7,4 @@ from sklearn.metrics import normalized_mutual_info_score
 vals = np.array([[1, 2], [2, 3]])
 x = np.array([3, 5])
 print(np.sum(x * vals[0]))
+print('foo')
